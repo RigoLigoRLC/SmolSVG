@@ -1,0 +1,1 @@
+/usr/bin/c++  -g   CMakeFiles/0005_SmolSVG.dir/main.cpp.o  -o 0005_SmolSVG 

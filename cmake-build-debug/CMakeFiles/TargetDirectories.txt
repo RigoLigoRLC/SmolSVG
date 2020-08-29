@@ -1,0 +1,3 @@
+/run/media/rigoligo/storage/C++ Projects/0005 SmolSVG/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/run/media/rigoligo/storage/C++ Projects/0005 SmolSVG/cmake-build-debug/CMakeFiles/smolsvg.dir
+/run/media/rigoligo/storage/C++ Projects/0005 SmolSVG/cmake-build-debug/CMakeFiles/edit_cache.dir

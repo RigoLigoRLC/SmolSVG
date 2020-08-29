@@ -1,0 +1,4 @@
+/opt/apps/com.jetbrains.clion/files/bin/cmake/linux/bin/cmake -DCMAKE_BUILD_TYPE=Debug -G "CodeBlocks - Unix Makefiles" "/run/media/rigoligo/storage/C++ Projects/0005 SmolSVG"
+-- Configuring done
+-- Generating done
+-- Build files have been written to: /run/media/rigoligo/storage/C++ Projects/0005 SmolSVG/cmake-build-debug

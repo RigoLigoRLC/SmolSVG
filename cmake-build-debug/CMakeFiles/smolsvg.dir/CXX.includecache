@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/run/media/rigoligo/storage/C++ Projects/0005 SmolSVG/pathreader.cpp
+string
+-
+stdexcept
+-
+svgpath.hpp
+/run/media/rigoligo/storage/C++ Projects/0005 SmolSVG/svgpath.hpp
+
+/run/media/rigoligo/storage/C++ Projects/0005 SmolSVG/svgcommands.hpp
+vector
+-
+
+/run/media/rigoligo/storage/C++ Projects/0005 SmolSVG/svgpath.hpp
+svgcommands.hpp
+/run/media/rigoligo/storage/C++ Projects/0005 SmolSVG/svgcommands.hpp
+
