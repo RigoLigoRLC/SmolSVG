@@ -3,19 +3,14 @@
 
     This file is part of SmolSVG.
 
-    SmolSVG is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Lesser General Public License as
-    published by the Free Software Foundation, either version 3 of
-    the License, or (at your option) any later version.
+    SmolSVG is distributed under MIT License. You must use the source code of
+    SmolSVG under the restrictions of MIT License.
 
-    SmolSVG is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Lesser General Public License for more details.
+    ABSOLUTE NO WARRANTY was promised.
 
-    You should have received a copy of the GNU Lesser General Public License
-    along with SmolSVG. If not, see <https://www.gnu.org/licenses/>.
+    You can obtain a copy of MIT License here: https://opensource.org/licenses/MIT
 */
+
 #ifndef SMOLSVG_SVGCOMMANDS_HPP_
 #define SMOLSVG_SVGCOMMANDS_HPP_
 
