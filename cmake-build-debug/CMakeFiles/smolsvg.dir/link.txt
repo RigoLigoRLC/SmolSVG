@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/smolsvg.dir/main.cpp.o CMakeFiles/smolsvg.dir/pathreader.cpp.o CMakeFiles/smolsvg.dir/svgcommands.cpp.o CMakeFiles/smolsvg.dir/svgpath.cpp.o  -o smolsvg 

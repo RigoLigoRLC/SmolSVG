@@ -23,13 +23,14 @@ namespace SmolSVG
 {
   std::vector<SmolCoord> commandLineTo::linearize()
   {
-    std::vector<SmolCoord> ret; // TODO stub lineto
+    std::vector<SmolCoord> ret { pointFrom, pointTo };
     return ret;
   }
 
   std::vector<SmolCoord> commandQuadraticBezierTo::linearize()
   {
     std::vector<SmolCoord> ret; // TODO stub quadratic bezier
+
     return ret;
   }
 
