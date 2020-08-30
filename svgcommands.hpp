@@ -20,6 +20,7 @@
 #define SMOLSVG_SVGCOMMANDS_HPP_
 
 #include <vector>
+#include <cmath>
 
 namespace SmolSVG
 {
@@ -29,6 +30,10 @@ namespace SmolSVG
     SmolCoord operator+(const SmolCoord &o) { return { this->X + o.X, this->Y + o.Y }; }
     SmolCoord operator-(const SmolCoord &o) { return { this->X - o.X, this->Y - o.Y }; }
     SmolCoord operator*(const double &o) { return { this->X * o, this->Y * o }; }
+    void operator+=(const double &o) { X += o, Y += o; }
+    void operator-=(const double &o) { X -= o; Y -= o; }
+    void operator*=(const double &o) { X *= o, Y *= o; }
+    double lengthToOrigin() const { return std::sqrt(X * X + Y * Y); }
     SmolCoord(const double x, const double y) { X = x, Y = y; }
     SmolCoord() { X = Y = 0.0; }
   };
@@ -42,6 +47,7 @@ namespace SmolSVG
       virtual ~baseCommand() = default;
       const SmolCoord& getConstStartPoint() { return pointFrom; }
       const SmolCoord& getConstEndPoint() { return pointTo; }
+      virtual void scaleToOrigin(const double coeff) { pointFrom *= coeff, pointTo *= coeff; }
 
     protected:
       SmolCoord pointFrom, pointTo;
@@ -55,7 +61,11 @@ namespace SmolSVG
         { pointFrom.X = pFromX, pointFrom.Y = pFromY, pointTo.X = pToX, pointTo.Y = pToY; }
       commandLineTo(const SmolCoord &pFrom,  const SmolCoord &pTo) { pointFrom = pFrom, pointTo = pTo; }
 
-      std::vector<SmolCoord> linearize();
+      std::vector<SmolCoord> linearize()
+      {
+        std::vector<SmolCoord> ret { pointFrom, pointTo };
+        return ret;
+      }
   };
 
   class commandQuadraticBezierTo : public baseCommand
@@ -70,8 +80,22 @@ namespace SmolSVG
       }
       commandQuadraticBezierTo(const SmolCoord &pFrom, const SmolCoord &pHandle, const SmolCoord &pTo)
         { pointFrom = pFrom, pointHandle = pHandle, pointTo = pTo; }
+        void scaleToOrigin(const double coeff) override { pointFrom *= coeff, pointTo *= coeff, pointHandle *= coeff; }
 
-      std::vector<SmolCoord> linearize();
+      std::vector<SmolCoord> linearize()
+      {
+        std::vector<SmolCoord> ret; // TODO stub quadratic bezier
+        unsigned long segmentCount = (pointHandle - pointFrom).lengthToOrigin() + (pointTo - pointFrom).lengthToOrigin();
+        ret.emplace_back(pointFrom);
+        for(double t = 1 / segmentCount; t < 1; t += 1 / segmentCount)
+        {
+          // t*(b-a)+a -> t*b-t*a+a -> t*b+(1-t)*a
+          SmolCoord i1 = pointHandle * t + pointFrom * (1 - t), i2 = pointTo * t + pointHandle * (1 - t);
+          ret.emplace_back(i1 * t + i2 * (1 - t));
+        }
+        ret.emplace_back(pointTo);
+        return ret;
+      }
   };
 
   class commandCubicBezierTo : public baseCommand
@@ -87,8 +111,26 @@ namespace SmolSVG
       commandCubicBezierTo(const SmolCoord &pFrom, const SmolCoord &pHandleA, const SmolCoord &pHandleB,
                            const SmolCoord &pTo)
       { pointFrom = pFrom, pointHandleA = pHandleA, pointHandleB = pHandleB, pointTo = pTo; }
+      void scaleToOrigin(const double coeff) override
+      { pointFrom *= coeff, pointTo *= coeff, pointHandleA *= coeff, pointHandleB *= coeff; }
 
-      std::vector<SmolCoord> linearize();
+      std::vector<SmolCoord> linearize()
+      {
+        std::vector<SmolCoord> ret; // TODO stub cubic bezier
+        unsigned long segmentCount =  (pointHandleA - pointFrom).lengthToOrigin() + // Begin-A distance
+                                      (pointHandleB - pointHandleA).lengthToOrigin() + // A-B distance
+                                      (pointTo - pointHandleB).lengthToOrigin(); // B-End distance
+        ret.emplace_back(pointFrom);
+        for(double t = 1 / segmentCount; t < 1; t += 1 / segmentCount)
+        {
+          SmolCoord i1 = pointHandleA * t + pointFrom * (1 - t), i2 = pointHandleB * t + pointHandleA * (1 - t),
+                  i3 = pointTo * t + pointHandleB * (1 - t);
+          i1 = i2 * t + i1 * (1 - t), i2 = i3 * t + i2 * (1 - t);
+          ret.emplace_back(i1 * t + i2 * (1 - t));
+        }
+        ret.emplace_back(pointTo);
+        return ret;
+      }
   };
 
   class commandEllipticalArcTo : public baseCommand
@@ -111,7 +153,19 @@ namespace SmolSVG
         pointTo = pTo;
       }
 
-      std::vector<SmolCoord> linearize();
+      std::vector<SmolCoord> linearize()
+      {
+        std::vector<SmolCoord> ret; // TODO stub elliptical arc
+        unsigned long segmentCount = radii.lengthToOrigin();
+
+        return ret;
+      }
+  };
+
+  class commandCentralArc : public baseCommand
+  {
+      SmolCoord pointCenter, size;
+      double rotation;
   };
 }
 
