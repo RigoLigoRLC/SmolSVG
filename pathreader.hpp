@@ -299,12 +299,14 @@ namespace SmolSVG
                         PenLocation * 2 - lastCommand->getConstEndPoint(),
                         realCoord(relativeToken, PenLocation, argCache, 0)));
               PenLocation = ret.getLastCommand()->getConstEndPoint();
+              break;
             case ArcTo:
               ret.addRawCommand(new commandEllipticalArcTo(PenLocation,
                       {argCache[0], argCache[1]},
                       argCache[2], argCache[3] == 1.0, argCache[4] == 1.0,
                       realCoord(relativeToken, PenLocation, argCache, 5)));
               PenLocation = ret.getLastCommand()->getConstEndPoint();
+              break;
             default:
               throw std::logic_error("Unknown token enumeration");
           }
