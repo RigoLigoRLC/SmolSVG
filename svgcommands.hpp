@@ -19,6 +19,9 @@
 
 namespace SmolSVG
 {
+  enum commandType
+  { Invalid, MoveTo, ClosePath, LineTo, HorizontalTo, VerticalTo, CurveTo, SmoothTo, QuadTo, SmoothQuadTo, ArcTo };
+
   struct SmolCoord
   {
     double X, Y;
@@ -37,24 +40,27 @@ namespace SmolSVG
   {
       virtual std::vector<SmolCoord> linearize() = 0;
 
+    protected:
+      SmolCoord pointFrom, pointTo;
+      bool relative;
+      commandType cmdType = Invalid;
     public:
       baseCommand() { relative = false; }
       virtual ~baseCommand() = default;
       const SmolCoord& getConstStartPoint() { return pointFrom; }
       const SmolCoord& getConstEndPoint() { return pointTo; }
       virtual void scaleToOrigin(const double coeff) { pointFrom *= coeff, pointTo *= coeff; }
+      const commandType type() { return cmdType; }
 
-    protected:
-      SmolCoord pointFrom, pointTo;
-      bool relative;
   };
 
   class commandLineTo : public baseCommand
   {
     public:
       commandLineTo(const double pFromX, const double pFromY, const double pToX, const double pToY)
-        { pointFrom.X = pFromX, pointFrom.Y = pFromY, pointTo.X = pToX, pointTo.Y = pToY; }
-      commandLineTo(const SmolCoord &pFrom,  const SmolCoord &pTo) { pointFrom = pFrom, pointTo = pTo; }
+        { pointFrom.X = pFromX, pointFrom.Y = pFromY, pointTo.X = pToX, pointTo.Y = pToY; cmdType = LineTo; }
+      commandLineTo(const SmolCoord &pFrom, const SmolCoord &pTo)
+        { pointFrom = pFrom, pointTo = pTo; cmdType = LineTo; }
 
       std::vector<SmolCoord> linearize()
       {
@@ -72,10 +78,14 @@ namespace SmolSVG
       {
         pointFrom.X = pFromX, pointFrom.Y = pFromY, pointHandle.X = pHandleX, pointHandle.Y = pHandleY,
         pointTo.X = pToX, pointTo.Y = pToY;
+        cmdType = QuadTo;
       }
+
       commandQuadraticBezierTo(const SmolCoord &pFrom, const SmolCoord &pHandle, const SmolCoord &pTo)
-        { pointFrom = pFrom, pointHandle = pHandle, pointTo = pTo; }
+        { pointFrom = pFrom, pointHandle = pHandle, pointTo = pTo; cmdType = QuadTo; }
         void scaleToOrigin(const double coeff) override { pointFrom *= coeff, pointTo *= coeff, pointHandle *= coeff; }
+
+      const SmolCoord getHandle() const { return pointHandle; }
 
       std::vector<SmolCoord> linearize()
       {
@@ -102,12 +112,18 @@ namespace SmolSVG
       {
         pointFrom.X = pFromX, pointFrom.Y = pFromY, pointHandleA.X = pHandleAX, pointHandleA.Y = pHandleAY,
         pointHandleB.X = pHandleBX, pointHandleB.Y = pHandleBY, pointTo.X = pToX, pointTo.Y = pToY;
+        cmdType = CurveTo;
       }
+
       commandCubicBezierTo(const SmolCoord &pFrom, const SmolCoord &pHandleA, const SmolCoord &pHandleB,
                            const SmolCoord &pTo)
-      { pointFrom = pFrom, pointHandleA = pHandleA, pointHandleB = pHandleB, pointTo = pTo; }
+      { pointFrom = pFrom, pointHandleA = pHandleA, pointHandleB = pHandleB, pointTo = pTo; cmdType = CurveTo; }
+
       void scaleToOrigin(const double coeff) override
       { pointFrom *= coeff, pointTo *= coeff, pointHandleA *= coeff, pointHandleB *= coeff; }
+
+      const SmolCoord getHandleA() const { return pointHandleA; }
+      const SmolCoord getHandleB() const { return pointHandleB; }
 
       std::vector<SmolCoord> linearize()
       {
@@ -140,13 +156,20 @@ namespace SmolSVG
       {
         pointFrom.X = pFromX, pointFrom.Y = pFromY, radii.X = pRadiiX, radii.Y = pRadiiY, XAxisRotation = XAxisRot,
         flagLargeArc = largeArc, flagSweep = sweep, pointTo.X = pToX, pointTo.Y = pToY;
+        cmdType = ArcTo;
       }
       commandEllipticalArcTo(const SmolCoord &pFrom, const SmolCoord pRadii, const double XAxisRot, const bool largeArc,
                              const bool sweep, const SmolCoord pTo)
       {
         pointFrom = pFrom, radii = pRadii, XAxisRotation = XAxisRot, flagLargeArc = largeArc, flagSweep = sweep,
         pointTo = pTo;
+        cmdType = ArcTo;
       }
+
+      const SmolCoord getRadii() { return radii; }
+      const double getXAxisRotation() { return XAxisRotation; }
+      const bool getLargeArc() { return flagLargeArc; }
+      const bool getFlagSweep() { return flagSweep; }
 
       std::vector<SmolCoord> linearize()
       {

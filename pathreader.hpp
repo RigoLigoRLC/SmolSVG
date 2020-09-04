@@ -44,8 +44,7 @@ namespace SmolSVG
     unsigned int remainingArgCount = 0, commandArgCount = 0;
     bool relativeToken = false;
     enum { SkipSpacer, ReadCommand, ReadArgs, GenerateCommandObject } status = SkipSpacer;
-    enum { MoveTo, ClosePath, LineTo, HorizontalTo, VerticalTo, CurveTo, SmoothTo, QuadTo, SmoothQuadTo, ArcTo }
-      commandToken;
+    commandType commandToken;
 
     for(std::string::const_iterator i = pathStr.cbegin(); i <= pathStr.cend(); )
     {
@@ -61,7 +60,7 @@ namespace SmolSVG
             else
               throw std::logic_error("Unexpected command amongst arguments");
           }
-          else if(*i >= '.' && *i <= '9')
+          else if(*i >= '-' && *i <= '9')
           {
             if(!remainingArgCount)
             {
@@ -226,7 +225,7 @@ namespace SmolSVG
           break;
 
         case ReadArgs:
-          while(*i >= '.' && *i <= '9')
+          while(*i >= '-' && *i <= '9')
             i++;
           argCache.emplace_back(std::stod(std::string(cutBegin, i)));
           remainingArgCount--;
@@ -237,6 +236,8 @@ namespace SmolSVG
           break;
 
         case GenerateCommandObject:
+        {
+          baseCommand* lastCommand = ret.getLastCommand();
           switch(commandToken)
           {
             case MoveTo:
@@ -249,55 +250,66 @@ namespace SmolSVG
             case LineTo:
               ret.addRawCommand(new commandLineTo(PenLocation,
                       realCoord(relativeToken, PenLocation, argCache, 0)));
-              PenLocation = ret.getLastCommand()->getConstEndPoint();
+              PenLocation = lastCommand->getConstEndPoint();
               break;
             case VerticalTo:
               ret.addRawCommand(new commandLineTo(PenLocation,
                       realCoord(relativeToken, PenLocation, relativeToken ? 0 : PenLocation.X, argCache[0])));
-              PenLocation = ret.getLastCommand()->getConstEndPoint();
+              PenLocation = lastCommand->getConstEndPoint();
               break;
             case HorizontalTo:
               ret.addRawCommand(new commandLineTo(PenLocation,
                       realCoord(relativeToken, PenLocation, argCache[0], relativeToken ? 0 : PenLocation.Y)));
-              PenLocation = ret.getLastCommand()->getConstEndPoint();
+              PenLocation = lastCommand->getConstEndPoint();
               break;
             case CurveTo:
               ret.addRawCommand(new commandCubicBezierTo(PenLocation,
                       realCoord(relativeToken, PenLocation, argCache, 0),
                       realCoord(relativeToken, PenLocation, argCache, 2),
                       realCoord(relativeToken, PenLocation, argCache, 4)));
-              PenLocation = ret.getLastCommand()->getConstEndPoint();
+              PenLocation = lastCommand->getConstEndPoint();
               break;
             case SmoothTo:
-              ret.addRawCommand(new commandCubicBezierTo(PenLocation,
-                      PenLocation * 2 - ret.getLastCommand()->getConstEndPoint(),
-                      realCoord(relativeToken, PenLocation, argCache, 0),
-                      realCoord(relativeToken, PenLocation, argCache, 2)));
-              PenLocation = ret.getLastCommand()->getConstEndPoint();
+              if(lastCommand->type() == CurveTo)
+                ret.addRawCommand(new commandCubicBezierTo(PenLocation,
+                        PenLocation * 2 - dynamic_cast<commandCubicBezierTo*>(lastCommand)->getHandleB(),
+                        realCoord(relativeToken, PenLocation, argCache, 0),
+                        realCoord(relativeToken, PenLocation, argCache, 2)));
+              else
+                ret.addRawCommand(new commandCubicBezierTo(PenLocation,
+                        PenLocation * 2 - lastCommand->getConstEndPoint(),
+                        realCoord(relativeToken, PenLocation, argCache, 0),
+                        realCoord(relativeToken, PenLocation, argCache, 2)));
+              PenLocation = lastCommand->getConstEndPoint();
               break;
             case QuadTo:
               ret.addRawCommand(new commandQuadraticBezierTo(PenLocation,
                       realCoord(relativeToken, PenLocation, argCache, 0),
                       realCoord(relativeToken, PenLocation, argCache, 2)));
-              PenLocation = ret.getLastCommand()->getConstEndPoint();
+              PenLocation = lastCommand->getConstEndPoint();
               break;
             case SmoothQuadTo:
-              ret.addRawCommand(new commandQuadraticBezierTo(PenLocation,
-                      PenLocation * 2 - ret.getLastCommand()->getConstEndPoint(),
-                      realCoord(relativeToken, PenLocation, argCache, 0)));
-              PenLocation = ret.getLastCommand()->getConstEndPoint();
+              if(lastCommand->type() == QuadTo)
+                ret.addRawCommand(new commandQuadraticBezierTo(PenLocation,
+                        PenLocation * 2 - dynamic_cast<commandQuadraticBezierTo*>(lastCommand)->getHandle(),
+                        realCoord(relativeToken, PenLocation, argCache, 0)));
+              else
+                ret.addRawCommand(new commandQuadraticBezierTo(PenLocation,
+                        PenLocation * 2 - lastCommand->getConstEndPoint(),
+                        realCoord(relativeToken, PenLocation, argCache, 0)));
+              PenLocation = lastCommand->getConstEndPoint();
             case ArcTo:
               ret.addRawCommand(new commandEllipticalArcTo(PenLocation,
                       {argCache[0], argCache[1]},
                       argCache[2], argCache[3] == 1.0, argCache[4] == 1.0,
                       realCoord(relativeToken, PenLocation, argCache, 5)));
-              PenLocation = ret.getLastCommand()->getConstEndPoint();
+              PenLocation = lastCommand->getConstEndPoint();
             default:
               throw std::logic_error("Unknown token enumeration");
           }
           status = SkipSpacer;
           break;
-
+        }
         default: ;
       }
     }
