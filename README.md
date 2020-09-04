@@ -29,7 +29,7 @@ Here, the program output the type of each command the path object consists of. B
 The following commands will be written into the path object by `SmolSVG::readPathString(std::string)`:
 - `SmolSVG::commandLineTo` (type(): 3)
 - `SmolSVG::commandQuadraticBezierTo` (type(): 8)
-- `SmolSVG::commandCubicBezierTo` (type(): 6)
+- `SmolSVG::commandCurveBezierTo` (type(): 6)
 - `SmolSVG::commandEllipticalArcTo` (type(): 10)
 
 Commands like "move to", "close path", "line vertically" and such were processed automatically by the `SmolSVG::readPathString(std::string)` function. By examining the type of each object, you can access the interface of each object with or without a cast.
