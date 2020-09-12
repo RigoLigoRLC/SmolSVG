@@ -8,11 +8,12 @@ SmolSVG was a wheel invented firstly specifically for another project of mine --
 Drop all `.hpp` files into your project include directory, and include `pathreader.hpp` whereever you need to read SVG paths. Then you just need to do this:
 ```
 auto path = SmolSVG::readPathString(AnySvgPathStdString);
-```
-SmolSVG will read the path for you.
+``
+SmolSVG will read the path for you. Please notice that a pointer to the path was returned: **the path must be `delete`d manually after use**. This is mostly bacuase C++ will return a copy of the path rather than returning the original object back to the invoker; this will destruct the original object and all the pointers inside will be invalid. I did't bother to use smart pointers there.
 
-The return type of `SmolSVG::readPathString(std::string)` is `SmolSVG::SVGRawPath`, which consists of following methods:
-- `begin()` and `end()` mutable data iterator;
+The return type of `SmolSVG::readPathString(std::string)` is `SmolSVG::SVGRawPath*`, which consists of following methods:
+- `begin()` and `end()` const data iterator;
+- `mbegin()` and `mend()` mutable data iterator;
 - `addRawCommand(SmolSVG::baseCommand*)` for adding a command at the end of the path;
 - `getLastCommand()` for reading back the last command in the path;
 - `purgeLastCommand()` for removing the last command from the path **(but not releasing the memory the pointer pointed to!)**
@@ -21,7 +22,7 @@ These methods allows basic modification to the path. After all we can only read 
 
 You can fetch each element using range-based `for`:
 ```
-for(auto &i : path)
+for(auto &i : *path)
   cout << i.type() << endl;
 ```
 Here, the program output the type of each command the path object consists of. But what commands do we have here?
@@ -40,7 +41,7 @@ Every command inherited from `SmolSVG::baseCommand` will have `getConstStartPoin
 
 You can use a switch statement to determine the type of each object, and process them accordingly.
 ```
-for(auto &i : path)
+for(auto &i : *path)
   switch(i->type()) {
     case SmolSVG::commandType::LineTo:
       //...
@@ -56,6 +57,8 @@ for(auto &i : path)
       break;
   }
 ```
+At last don't forget deleting the path for the heap's sake.
+`delete path;`
 
 ## Error handling
 SmolSVG isn't made to see errors in paths, nor could it detect its own crash. It's a state machine; if it runs into no state, then it will lock up completely. All the errors it could see is incorrect argument counts. So, only feed SmolSVG with valid SVG paths!

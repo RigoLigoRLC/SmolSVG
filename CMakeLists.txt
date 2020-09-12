@@ -5,5 +5,6 @@ set(CMAKE_CXX_STANDARD 14)
 set(EXEC smolsvg)
 
 file(GLOB SOURCES *.cpp)
+add_compile_options(/ZI)
 
 add_executable(smolsvg ${SOURCES})

@@ -9,7 +9,7 @@ int main()
 
   auto path = SmolSVG::readPathString(a);
 
-  for(auto &i : path)
+  for(auto i : *path)
     switch(i->type())
     {
       case SmolSVG::commandType::LineTo:
@@ -25,6 +25,7 @@ int main()
         std::cout << "Arc object" << std::endl;
         break;
     }
-  std::cout << "Hello, World!" << std::endl;
+
+  delete path;
   return 0;
 }
