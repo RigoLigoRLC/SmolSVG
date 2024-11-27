@@ -8,7 +8,7 @@ SmolSVG was a wheel invented firstly specifically for another project of mine --
 Drop all `.hpp` files into your project include directory, and include `pathreader.hpp` whereever you need to read SVG paths. Then you just need to do this:
 ```
 auto path = SmolSVG::readPathString(AnySvgPathStdString);
-``
+```
 SmolSVG will read the path for you. Please notice that a pointer to the path was returned: **the path must be `delete`d manually after use**. This is mostly bacuase C++ will return a copy of the path rather than returning the original object back to the invoker; this will destruct the original object and all the pointers inside will be invalid. I did't bother to use smart pointers there.
 
 The return type of `SmolSVG::readPathString(std::string)` is `SmolSVG::SVGRawPath*`, which consists of following methods:
